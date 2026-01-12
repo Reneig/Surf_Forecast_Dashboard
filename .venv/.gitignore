@@ -1,0 +1,27 @@
+# Created by venv; see https://docs.python.org/3/library/venv.html#how-venvs-work
+# --- Python ---
+# Environnements virtuels
+
+.venv/
+venv/
+env/
+ENV/
+# Cache et fichiers compilés
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+
+# --- R ---
+# Historique et données de session
+.Rhistory
+.RData
+.Ruserdata
+.Rproj.user/
+
+# --- Données et Système ---
+# Ignorer le fichier CSV généré (optionnel, si vous voulez que les gens le génèrent eux-mêmes)
+*.csv
+
+# Fichiers système
+.DS_Store
+Thumbs.db
