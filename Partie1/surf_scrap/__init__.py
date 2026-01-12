@@ -1,0 +1,1 @@
+from .scraper import scrape_surf_report

@@ -1,0 +1,183 @@
+---
+title: "Surf Forecast Dashboard"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: rows
+    vertical_layout: fill
+    theme: flatly
+---
+
+<style>
+/* Fond de la page */
+body {
+    background-color: #f4f7f6;
+}
+
+/* Style des cartes (boîtes) */
+.chart-wrapper {
+    border-radius: 10px; /* Coins arrondis */
+    border: none; /* Supprime la bordure standard */
+    box-shadow: 0 4px 8px rgba(0,0,0,0.05); /* Ombre légère professionnelle */
+    margin-bottom: 20px;
+    background: white;
+}
+
+/* Style du titre des cartes */
+.chart-title {
+    font-weight: bold;
+    border-bottom: 1px solid #eee;
+    padding: 10px 15px;
+    color: #2c3e50;
+}
+
+/* Navbar personnalisée (couleur surf/océan) */
+.navbar {
+    background-color: #2c3e50;
+    border-bottom: 3px solid #18bc9c;
+}
+
+/* Centrer le titre des cadrans */
+.chart-title {
+    text-align: center;
+    font-weight: bold;
+    color: #2c3e50;
+    width: 100%;
+}
+</style>
+
+```{r setup, include=FALSE}
+library(flexdashboard)
+library(reticulate)
+library(readr)
+library(dplyr)
+library(ggplot2)
+library(tidyr)
+library(knitr)
+library(tidyverse)
+library(plotly)
+library(kableExtra)
+
+# Force R to use your VSCode project's virtual environment
+# Move up one level (..) because the Rmd is in 'Partie1' and .venv is above it
+use_virtualenv("../.venv", required = TRUE)
+
+# Importation
+surf_lib <- import("surf_scrap")
+
+#  Web scraping execution
+##Link
+URL <- "https://www.surf-report.com/meteo-surf/lacanau-s1043.html"
+
+CSV_OUT <- "data_surf.csv"
+
+# Call the library created on python
+surf_lib$scrape_surf_report(URL, output_csv_path = CSV_OUT)
+
+#  Data loading on R
+data <- readr::read_csv(CSV_OUT)
+
+# Data cleaning for the KPI computing
+df_clean <- data %>%
+  # Parse "5.0 - 7.6" into separate values to compute the mean of the range.
+  separate(Waves_size, into = c("w_min", "w_max"), sep = " - ", convert = TRUE, remove = FALSE) %>%
+  mutate(
+    Wave_Mean = (w_min + w_max) / 2,
+    Wind_Speed_Num = as.numeric(gsub("[^0-9.]", "", Wind_speed)),
+    # Quality Score Calculation (Criteria: wave <1m, wind <50km/h, North direction)
+    Is_North = grepl("Nord", Wind_direction),
+    Quality_Score = case_when(
+      Wave_Mean <= 1.0 & Wind_Speed_Num <= 50 & Is_North ~ 100,
+      Wave_Mean <= 2.0 & Wind_Speed_Num <= 60 ~ 60,
+      TRUE ~ 30
+    ),
+    Time_Idx = row_number()
+  )
+
+# Identification of the best moments
+best_moment <- df_clean %>% arrange(desc(Quality_Score), desc(Wave_Mean)) %>% head(1)
+highest_wave <- df_clean %>% arrange(desc(w_max)) %>% head(1)
+```
+
+
+Row {data-height=300}
+-----------------------------------------------------------------------
+
+### 🏄 Best moment to pratice surf
+```{r}
+
+  valueBox(
+  value = paste(best_moment$Day, "@", best_moment$Hour),
+  caption = "Best moment to pratice surf",
+  icon = "fa-star",
+  color = "success"
+  )
+```
+
+
+### 📈 Grade of the sea quality
+
+```{r}
+#Gauge
+gauge(best_moment$Quality_Score, min = 0, max = 100, symbol = '%', gaugeSectors(
+  success = c(80, 100), warning = c(40, 79), danger = c(0, 39)
+))
+```
+
+
+### 🌊 Highest wave for the week
+
+```{r}
+valueBox(
+  value = paste(highest_wave$w_max, "m"),
+  caption = paste("Forecasted for", highest_wave$Day),
+  icon = "fa-arrows-alt-v",
+  color = "info"
+)
+```
+
+
+Row {data-height=1000}
+-----------------------------------------------------------------------
+
+### 🌊 Waze size over the time
+```{r}
+
+p <- ggplot(df_clean, aes(x = Time_Idx, y = Wave_Mean)) +
+  geom_area(fill = "#0077b6", alpha = 0.3) +
+  geom_line(color = "#0077b6", linewidth = 1) + 
+  theme_minimal() +
+  labs(x = "Time", y = "Waze mean(m)")
+
+ggplotly(p) %>% 
+  layout(autosize = TRUE, margin = list(l = 0, r = 0, b = 0, t = 40))
+```
+
+### 🌬️ Wind speed overthetime
+```{r}
+p_vent <- ggplot(df_clean, aes(x = Time_Idx, y = Wind_Speed_Num, 
+                     text = paste("Hour :", Time_Idx, "<br>Speed :", Wind_Speed_Num, "km/h"))) +
+  geom_col(fill = "#90e0ef") +
+  theme_minimal() +
+  labs(x = "Time", y = "Speed (km/h)")
+
+ggplotly(p_vent) %>% 
+  layout(
+    autosize = TRUE, 
+    margin = list(l = 0, r = 0, b = 0, t = 40, pad = 0)
+  )
+```
+
+Row {data-height=800}
+-----------------------------------------------------------------------
+
+### 📝 Summarise table (day, hour, wave size, wind direction)
+
+```{r}
+
+data %>% 
+  select(Day, Hour, Waves_size, Wind_direction) %>% 
+  kable(format = "html", align = "c") %>% 
+  kable_styling(
+    bootstrap_options = c("striped", "hover", "condensed", "responsive"),
+    full_width = TRUE 
+  )

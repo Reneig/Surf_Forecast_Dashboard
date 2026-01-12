@@ -1,0 +1,43 @@
+Day,Hour,Waves_size,Wind_speed,Wind_direction
+Lundi 12 Janvier,06:00,1.6 - 2.3,25,Orientation vent Sud
+Lundi 12 Janvier,09:00,1.7 - 2.6,30,Orientation vent Sud
+Lundi 12 Janvier,12:00,1.9 - 2.9,33,Orientation vent Sud Sud Ouest
+Lundi 12 Janvier,15:00,2.1 - 3.1,31,Orientation vent Sud
+Lundi 12 Janvier,18:00,2.1 - 3.2,26,Orientation vent Sud
+Lundi 12 Janvier,21:00,2.1 - 3.2,20,Orientation vent Sud Sud Est
+Mardi 13 Janvier,06:00,1.9 - 2.9,25,Orientation vent Sud Sud Est
+Mardi 13 Janvier,09:00,1.9 - 2.8,23,Orientation vent Sud Sud Est
+Mardi 13 Janvier,12:00,1.9 - 2.9,30,Orientation vent Sud
+Mardi 13 Janvier,15:00,2.0 - 3.0,34,Orientation vent Sud Sud Ouest
+Mardi 13 Janvier,18:00,2.0 - 3.0,28,Orientation vent Sud Sud Ouest
+Mardi 13 Janvier,21:00,1.9 - 2.9,25,Orientation vent Sud Sud Ouest
+Mercredi 14 Janvier,06:00,1.9 - 2.8,20,Orientation vent Ouest Nord Ouest
+Mercredi 14 Janvier,09:00,1.9 - 2.8,16,Orientation vent Nord Ouest
+Mercredi 14 Janvier,12:00,1.9 - 2.8,13,Orientation vent Nord Nord Ouest
+Mercredi 14 Janvier,15:00,2.0 - 3.0,12,Orientation vent Nord Ouest
+Mercredi 14 Janvier,18:00,2.0 - 3.0,14,Orientation vent Ouest Nord Ouest
+Mercredi 14 Janvier,21:00,1.9 - 2.9,10,Orientation vent Ouest
+Jeudi 15 Janvier,06:00,1.5 - 2.2,18,Orientation vent Sud Est
+Jeudi 15 Janvier,09:00,1.4 - 2.0,21,Orientation vent Sud Est
+Jeudi 15 Janvier,12:00,1.3 - 2.0,25,Orientation vent Sud Est
+Jeudi 15 Janvier,15:00,1.6 - 2.3,32,Orientation vent Sud
+Jeudi 15 Janvier,18:00,1.7 - 2.6,37,Orientation vent Sud Sud Ouest
+Jeudi 15 Janvier,21:00,2.0 - 2.9,37,Orientation vent Sud Ouest
+Vendredi 16 Janvier,06:00,3.1 - 4.7,25,Orientation vent Ouest Sud Ouest
+Vendredi 16 Janvier,09:00,3.1 - 4.7,17,Orientation vent Ouest
+Vendredi 16 Janvier,12:00,3.1 - 4.6,17,Orientation vent Sud Ouest
+Vendredi 16 Janvier,15:00,3.0 - 4.5,16,Orientation vent Sud Sud Ouest
+Vendredi 16 Janvier,18:00,3.1 - 4.6,15,Orientation vent Sud Ouest
+Vendredi 16 Janvier,21:00,3.2 - 4.7,6,Orientation vent Sud Sud Est
+Samedi 17 Janvier,06:00,3.5 - 5.3,12,Orientation vent Sud Est
+Samedi 17 Janvier,09:00,3.5 - 5.2,14,Orientation vent Sud Sud Ouest
+Samedi 17 Janvier,12:00,3.4 - 5.1,18,Orientation vent Sud Sud Ouest
+Samedi 17 Janvier,15:00,3.2 - 4.8,16,Orientation vent Sud Sud Ouest
+Samedi 17 Janvier,18:00,3.0 - 4.5,15,Orientation vent Sud Sud Ouest
+Samedi 17 Janvier,21:00,2.8 - 4.3,6,Orientation vent Sud Sud Est
+Dimanche 18 Janvier,06:00,2.3 - 3.4,9,Orientation vent Est Nord Est
+Dimanche 18 Janvier,09:00,2.1 - 3.2,7,Orientation vent Nord Est
+Dimanche 18 Janvier,12:00,1.9 - 2.9,7,Orientation vent Nord
+Dimanche 18 Janvier,15:00,1.8 - 2.7,10,Orientation vent Nord
+Dimanche 18 Janvier,18:00,1.7 - 2.5,12,Orientation vent Nord
+Dimanche 18 Janvier,21:00,1.6 - 2.3,9,Orientation vent Nord Nord Est

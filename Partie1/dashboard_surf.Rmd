@@ -1,0 +1,212 @@
+---
+title: "Dashboard Surf"
+author: "Kevin HAMICI, Celia ZERROUDI, Margot LE CANN"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: columns
+    source_code: embed
+---
+
+```{r setup, include=FALSE}
+library(flexdashboard)
+library(ggplot2)
+library(plotly)
+library(gt)
+library(gtExtras)
+library(knitr)
+library(dplyr)
+library(dygraphs)
+
+```
+
+| Visualization |
+=======================================================================
+
+Column {data-width=500}
+-----------------------------------------------------------------------
+
+### Wave size
+
+```{r wave-size-chart}
+data <- read.csv("C:/Users/margo/OneDrive - Aix-Marseille Université/Programmation/Projet/data_surf/data_surf/data_surf.csv")
+data <- data %>% mutate(Date = as.POSIXct(paste(Day,Hour),format = "%A %d %B %H:%M"))
+
+# Average wave size extraction
+#to use the data remove the - and create two new columns to create the Wave_size_mean column
+data$Wave_Size_Min <- as.numeric(sub(" - .*", "", data$Waves_size))
+data$Wave_Size_Max <- as.numeric(sub(".* - ", "", data$Waves_size))
+data$Wave_Size_Mean <- rowMeans(data[, c("Wave_Size_Min", "Wave_Size_Max")], na.rm = TRUE)
+data <- subset(data, select = -c(Wave_Size_Min, Wave_Size_Max)) # To remove useless colomn
+
+# 1srt graphic with geom_line
+ggplotly(
+  ggplot(data, aes(x = Date, y = Wave_Size_Mean)) +
+  geom_line(color = "skyblue") +
+    labs(title = "Wave size over the time",
+       x = "Time",
+       y = "Average wave size (meter)")+
+  scale_x_datetime(date_breaks = "12 hours", date_labels = "%A %d %H:%M") +
+  theme(axis.text.x = element_text(angle = 50, hjust = 1))
+  )
+#we use scale_x_datetime to display only few hours to make the graph easier to read
+```
+
+
+
+Column {data-width=500}
+-----------------------------------------------------------------------
+
+### Wind speed
+
+```{r wind-speed-chart}
+#2nd grpahic with geom_line
+ggplotly(
+  ggplot(data, aes(x = Date, y = Wind_speed))+
+  geom_line(color= "skyblue")+
+  labs(title = "Wind speed over the time",
+       x = "Time",
+       y = "Wind speed (Km/h)")+
+  scale_x_datetime(date_breaks = "12 hours", date_labels = "%A %d %H:%M")+
+  theme(axis.text.x = element_text(angle = 50, hjust = 1))
+)
+
+```
+
+
+
+
+| Tables |
+=======================================================================
+
+Column {data-width=500}
+-----------------------------------------------------------------------
+
+### Summary
+
+```{r summary-table, echo=FALSE}
+#1st table with footnote 
+summary_table <- data %>%  
+  select(Day, Hour, Wave_Size_Mean, Wind_direction) %>% 
+  gt() %>% 
+  gt_theme_pff() %>% 
+  tab_footnote(footnote = md("Measured in **meters**"),
+               locations = cells_column_labels(columns = Wave_Size_Mean))
+
+# Display the table with a scrollable container
+htmltools::tags$div(
+  style = "overflow-x: auto; max-width: 100%; height: 500px; overflow-y: auto;",
+  summary_table
+)
+```
+
+
+Column {data-width=500}
+-----------------------------------------------------------------------
+
+### Best moment
+
+```{r best-moment, echo=FALSE}
+# Second table with the best moment to surf 
+best_moments <- data %>% filter(Wave_Size_Mean == max(Wave_Size_Mean))
+
+htmltools::tags$div(
+  style = "overflow-x: auto; max-width: 100%; height: 400px; overflow-y: auto;",
+  best_moments %>% 
+    gt() %>% 
+    gt_theme_pff()%>% 
+    tab_footnote(footnote = md("Measured in **meters**") ,
+               locations = cells_column_labels(columns = Wave_Size_Mean)) %>% 
+    tab_footnote(footnote = md("Measured in **km/h**") ,
+               locations = cells_column_labels(columns = Wind_speed))
+)
+```
+
+### Highest wave
+
+```{r highest-wave}
+highest_wave <- max(data$Wave_Size_Mean, na.rm = TRUE)
+
+# We use  indices to extract the day and time of the highest wave 
+highest_wave_indices <- which(data$Wave_Size_Mean == highest_wave)
+days_highest_wave <- data$Day[highest_wave_indices]
+hours_highest_wave <- data$Hour[highest_wave_indices]
+
+# Create the output message 
+output_message <- paste("The highest wave of the week is", highest_wave, "m, occurring on the following days and times:")
+
+# And we add the dy and the time with a loop for reproducibility
+for (i in seq_along(highest_wave_indices)) {
+  output_message <- paste(output_message, paste(days_highest_wave[i], "à", hours_highest_wave[i], "heures."), sep = "\n")
+}
+
+cat(output_message)
+```
+
+
+
+
+
+| Quality |
+=======================================================================
+
+Column {data-width=300}
+-----------------------------------------------------------------------
+
+### Gauge
+
+```{r sea-quality-gauge}
+# Quality score creation
+data$Quality <- 
+  ifelse(grepl("Nord", data$`Wind_direction`), 3, 0) +  # +3 if it contains "nord"
+  
+  # Condition for wave size, with points according to height
+  ifelse(data$Wave_Size_Mean > 1.0, 3, 
+         ifelse(data$Wave_Size_Mean > 0.75, 2, 
+                ifelse(data$Wave_Size_Mean > 0.5, 1, 0))) +
+  
+  # Same thing with wind speed 
+  ifelse(data$Wind_speed <= 10, 3, 
+         ifelse(data$Wind_speed <= 35, 2, 
+                ifelse(data$Wind_speed < 50, 1, 0)))
+
+# Final Jauge
+gauge(max(data$Quality, na.rm = TRUE), min = 0, max = 9, symbol = ' pts', label = "Sea quality score")
+```
+
+### Best wave score
+```{r}
+highest_score <- max(data$Quality, na.rm = TRUE)
+
+# We use also indices to extract the day and time of the best quality scpre
+highest_score_indices <- which(data$Quality== highest_score)
+days_highest_score <- data$Day[highest_score_indices]
+hours_highest_score <- data$Hour[highest_score_indices]
+
+# Create the second output message
+output_message2 <- paste("The highest sea quality score is", highest_score, "pts and and wil next occur on:")
+
+# Reproducibility
+for (i in seq_along(highest_wave_indices)) {
+  output_message2 <- paste(output_message2, paste(days_highest_score[i], "à", hours_highest_score[i], "heures."), sep = "\n")
+}
+
+cat(output_message2)
+```
+
+Column {data-width=700}
+-----------------------------------------------------------------------
+
+### Quality lot
+
+```{r quality plot}
+#Final plot to see to see all the week's scores 
+ggplotly(
+  ggplot(data, aes(x = Hour, y = Quality)) +
+    geom_point(color = "blue") +
+    labs(x = "", y = "Quality") +
+    facet_grid(~ reorder(Day, Date)) +  # Divise le graphique par jour
+    scale_x_discrete(breaks = function(x) x[seq(1, length(x), by = 2)]) +  # Affiche une heure sur deux
+    theme(axis.text.x = element_text(angle = 60, hjust = 1)) +
+    theme(strip.text = element_text(size = 6))
+)
+```
